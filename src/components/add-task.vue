@@ -7,20 +7,20 @@
 
         <div v-if="images.length" class="section-img">
           <div class="wrap-section-img">
-            <div class='wrap-img' v-for="(object, index) in this.images" :key="object.id">
-              <img class="img" :src="object.url" alt=""/>
+            <div class='wrap-img' v-for="(image, index) in this.images" :key="image.id">
+              <img class="img" :src="image.url" alt=""/>
               <img class="delete-img" src="../assets/close_FILL0_wght400_GRAD0_opsz48.svg"
-                   @click="removeImg(index)"/>
+                   @click="removeImg(index, image)"/>
             </div>
-            <label class="file-upload" v-if="this.images.length && this.imagesURL?.length < 8">
+            <label class="file-upload" v-if="this.images.length < 8">
               <input type="file" multiple @change="getImages($event)"/>
               <img src="../assets/download.svg" alt="">
             </label>
           </div>
         </div>
 
-        <drug-and-drop class="section-drug-drop" v-if="!this.images.length" @images='onFileChange'></drug-and-drop>
-        <button class="button-submit" @click="getText">Submit</button>
+        <drug-and-drop class="section-drug-drop" v-if="!this.images.length" @images='getImages'></drug-and-drop>
+        <button class="button-submit" @click="addToFireBase">Submit</button>
       </div>
     </div>
   </div>
@@ -29,84 +29,116 @@
 <script>
 
 import drugAndDrop from "./drug&drop";
+import {myMixin} from "@/store/request";
 
 export default {
 
-  props: ['titleArticle', 'textArticle', 'imagesArticle', 'id', 'fireBaseUrl', 'index'],
+  props: ['index'],
 
   components: {
     drugAndDrop
   },
 
   created() {
-    this.title = this.mainPosts.title;
-    this.text = this.mainPosts.text;
-    this.images = this.mainPosts.images || {};
-    this.previousID = this.mainPosts.id;
-    this.fireBaseId = this.mainPosts.fireBaseUrl
-    console.log(this.mainPosts)
+
+    const post = this.$store.state.articles[this.index] || null;
+    if (post) {
+      this.title = post.title;
+      this.text = post.text;
+      this.images = post.images;
+      this.id = post.id;
+      this.fireBaseId = post.fireBaseUrl
+    }
   },
 
 
   data() {
     return {
-      mainPosts: this.$store.state.articles[this.index],
       title: '',
       text: '',
-      imagesURL: [],
-      images: {},
-      previousID: '',
+      id: null,
       fireBaseId: null,
-
+      images: [],
+      imageLoaded: [],
+      imagesUnLoaded: [],
     }
   },
 
 
   methods: {
 
-    onFileChange(event) {
-      this.imagesURL = event
-    },
+    // onFileChange(files) {
+    //   console.log(files)
+    //   this.images = files
+    // },
 
-    getText() {
-      let chekId
-      console.log(this.images)
-      if (this.previousID) {
-        this.$store.commit('submitTodo', {
+    addToFireBase() {
+      this.images.forEach(el => {
+        if (el.name) {
+          this.imageLoaded.push({name: el.name, url: el.url})
+        } else {
+          this.imagesUnLoaded.push(el.file)
+        }
+      })
+
+      if (this.id) {
+        //update firebase
+        myMixin.methods.submitPosts({
           title: this.title,
           text: this.text,
-          images: this.imagesURL,
-          imagesURL:this.images,
-          id: this.previousID,
+          imagesUnLoaded: this.imagesUnLoaded,
+          imagesURL: this.imageLoaded,
+          id: this.id,
           fireBaseUrl: this.fireBaseId,
         })
       } else {
-        chekId = Math.round(Math.random() * 1000)
         //add to firebase
-        this.$store.commit('submitTodo', {
+        myMixin.methods.submitPosts( {
           title: this.title,
           text: this.text,
-          images: this.imagesURL,
-          id: chekId,
+          imagesUnLoaded: this.imagesUnLoaded,
+          id: Math.round(Math.random() * 1000),
         })
       }
-
       this.$emit('closePostBlock', false)
+
+
+      // if (this.id) {
+      //   //update firebase
+      //   this.$store.commit('submitPosts', {
+      //     title: this.title,
+      //     text: this.text,
+      //     imagesUnLoaded: this.imagesUnLoaded,
+      //     imagesURL: this.imageLoaded,
+      //     id: this.id,
+      //     fireBaseUrl: this.fireBaseId,
+      //   })
+      // } else {
+      //   //add to firebase
+      //   this.$store.commit('submitPosts', {
+      //     title: this.title,
+      //     text: this.text,
+      //     imagesUnLoaded: this.imagesUnLoaded,
+      //     id: Math.round(Math.random() * 1000),
+      //   })
+      // }
+      // this.$emit('closePostBlock', false)
     },
 
-    removeImg(index) {
-      if (this.previousID) {
-        this.$store.commit('removeImage', {images: this.images[index], id: this.previousID,})
+    removeImg(index, image) {
+      const COUNT_ELEMENTS = 1;
+      if (image.name) {
+        myMixin.methods.removeImage({imagesName: this.images[index].name, id: this.id})
+        // this.$store.commit('removeImage', {images: this.images[index], id: this.id,})
       }
-      this.images.splice(index, 1)
+      this.images.splice(index, COUNT_ELEMENTS)
     },
 
     getImages(e) {
-      let files = []
       for (let i = 0; i < e.target.files.length; i++) {
-        files.push(e.target.files[i])
+        let url = URL.createObjectURL(e.target.files[i]);
+        this.images.push({name: null, url, file: e.target.files[i]})
       }
-      this.onFileChange(files)
     },
 
     closeBlock(event) {

@@ -3,19 +3,12 @@
   <button @click="isOpenPostBlock('true')">Create new post</button>
   <task class="makeArticle"
         v-if="isCreatePostDialog"
-        @article='postArticle'
-        @closePostBlock='isOpenPostBlock'
-        :editArticle="editArticle">
-
+        @closePostBlock='isOpenPostBlock'>
   </task>
 
   <div class="wrap-newArticle" v-for="(article, index) in this.$store.state.articles" :key="article.id">
     <show-tasks
-        v-bind:takeArticle="article"
-        :index="index"
-        @getEditArticle="putArticle"
-        @remove="removeArticle">
-
+        :index="index">
     </show-tasks>
   </div>
 
@@ -38,7 +31,6 @@ export default {
     return {
       isCreatePostDialog: false,
       articles: this.$store.state.articles,
-      editArticle: []
     }
   },
 
@@ -46,27 +38,12 @@ export default {
     this.$store.commit('getPosts')
   },
 
-
   methods: {
-
 
     isOpenPostBlock(isOpen) {
       this.isCreatePostDialog = isOpen
     },
 
-    postArticle(data) {
-      this.articles.push(data)
-    },
-
-    putArticle(article) {
-      let editArticle = this.articles.filter(e => e.id === article.id)
-      this.articles.splice(this.articles.indexOf(editArticle[0]), 1, article)
-    },
-
-    removeArticle(article) {
-      let editArticle = this.articles.filter(e => e.id === article.id)
-      this.articles.splice(this.articles.indexOf(editArticle[0]), 1)
-    }
   }
 
 }

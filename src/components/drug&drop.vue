@@ -23,6 +23,7 @@ export default {
         }.bind(this), false);
       }.bind(this));
       this.$refs.fileform.addEventListener('drop', function (e) {
+        console.log(e)
         for (let i = 0; i < e.dataTransfer.files.length; i++) {
           this.files.push(e.dataTransfer.files[i]);
         }
@@ -52,11 +53,8 @@ export default {
       this.$emit('images', this.files)
     },
 
-    images(e) {
-      for (let i = 0; i < e.target.files.length; i++) {
-        this.files.push(e.target.files[i])
-      }
-      this.getImagePreviews();
+    images(event) {
+      this.$emit('images', event)
     }
   }
 }
