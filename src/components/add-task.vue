@@ -1,25 +1,28 @@
 <template>
-  <div class="background" id="background" @click="closeBlock($event)">
+  <div class="background" id="background" @click="checkClick($event)">
     <div class="panel-glass">
       <div class="wrap-block">
-        <input type="text" class="text" v-model="title">
-        <textarea class="text" name="info" cols="30" maxlength="200" rows="4" v-model="text"></textarea>
+        <input type="text" class="text" v-model="this.post.title">
+        <textarea class="text" name="info" cols="30" maxlength="200" rows="4" v-model="this.post.text"></textarea>
 
-        <div v-if="images.length" class="section-img">
+        <div v-if="this.post.images.length" class="section-img">
           <div class="wrap-section-img">
-            <div class='wrap-img' v-for="(image, index) in this.images" :key="image.id">
+
+            <div class="wrap-img" v-for="(image, index) in this.post.images" :key="image.id">
               <img class="img" :src="image.url" alt=""/>
               <img class="delete-img" src="../assets/close_FILL0_wght400_GRAD0_opsz48.svg"
                    @click="removeImg(index, image)"/>
             </div>
-            <label class="file-upload" v-if="this.images.length < 8">
+
+            <label class="file-upload" v-if="this.post.images.length < this.MAX_COUNT_IMAGES">
               <input type="file" multiple @change="getImages($event)"/>
               <img src="../assets/download.svg" alt="">
             </label>
+
           </div>
         </div>
 
-        <drug-and-drop class="section-drug-drop" v-if="!this.images.length" @images='getImages'></drug-and-drop>
+        <drug-and-drop class="section-drug-drop" v-else @images="getImages"></drug-and-drop>
         <button class="button-submit" @click="addToFireBase">Submit</button>
       </div>
     </div>
@@ -28,8 +31,10 @@
 
 <script>
 
-import drugAndDrop from "./drug&drop";
-import {myMixin} from "@/store/request";
+import drugAndDrop from "./drug-and-drop";
+import {fireBaseMixins} from "@/store/firebase-requests";
+
+const MAX_COUNT_IMAGES = 8;
 
 export default {
 
@@ -41,29 +46,36 @@ export default {
 
   created() {
 
-    const post = this.$store.state.articles[this.index] || null;
-    if (post) {
-      this.title = post.title;
-      this.text = post.text;
-      this.images = post.images;
-      this.id = post.id;
-      this.fireBaseId = post.fireBaseUrl
+    if (!this.$store.state.articles[this.index]) {
+      return
     }
-  },
 
+    const post = JSON.parse(JSON.stringify(this.$store.state.articles[this.index])) || null;
+
+    this.post = {
+      title: post.title,
+      text: post.text,
+      id: post.id,
+      fireBaseId: post.fireBaseUrl,
+      images: post.images,
+    }
+
+  },
 
   data() {
     return {
-      title: '',
-      text: '',
-      id: null,
-      fireBaseId: null,
-      images: [],
+      post: {
+        title: '',
+        text: '',
+        id: null,
+        fireBaseId: null,
+        images: [],
+      },
       imageLoaded: [],
       imagesUnLoaded: [],
+      MAX_COUNT_IMAGES,
     }
   },
-
 
   methods: {
 
@@ -73,80 +85,53 @@ export default {
     // },
 
     addToFireBase() {
-      this.images.forEach(el => {
-        if (el.name) {
-          this.imageLoaded.push({name: el.name, url: el.url})
+
+      this.post.images.forEach(element => {
+        if (element.name) {
+          this.imageLoaded.push({name: element.name, url: element.url});
         } else {
-          this.imagesUnLoaded.push(el.file)
+          this.imagesUnLoaded.push(element.file);
         }
-      })
+      });
 
-      if (this.id) {
-        //update firebase
-        myMixin.methods.submitPosts({
-          title: this.title,
-          text: this.text,
-          imagesUnLoaded: this.imagesUnLoaded,
-          imagesURL: this.imageLoaded,
-          id: this.id,
-          fireBaseUrl: this.fireBaseId,
-        })
-      } else {
-        //add to firebase
-        myMixin.methods.submitPosts( {
-          title: this.title,
-          text: this.text,
-          imagesUnLoaded: this.imagesUnLoaded,
-          id: Math.round(Math.random() * 1000),
-        })
-      }
-      this.$emit('closePostBlock', false)
+      fireBaseMixins.methods.submitPosts({
+        title: this.post.title,
+        text: this.post.text,
+        imagesUnLoaded: this.imagesUnLoaded,
+        imagesURL: this.imageLoaded,
+        id: this.post.id || Math.round(Math.random() * 1000),
+        fireBaseUrl: this.post.fireBaseId,
+      });
 
-
-      // if (this.id) {
-      //   //update firebase
-      //   this.$store.commit('submitPosts', {
-      //     title: this.title,
-      //     text: this.text,
-      //     imagesUnLoaded: this.imagesUnLoaded,
-      //     imagesURL: this.imageLoaded,
-      //     id: this.id,
-      //     fireBaseUrl: this.fireBaseId,
-      //   })
-      // } else {
-      //   //add to firebase
-      //   this.$store.commit('submitPosts', {
-      //     title: this.title,
-      //     text: this.text,
-      //     imagesUnLoaded: this.imagesUnLoaded,
-      //     id: Math.round(Math.random() * 1000),
-      //   })
-      // }
-      // this.$emit('closePostBlock', false)
+      this.closeAddBlock()
     },
 
     removeImg(index, image) {
       const COUNT_ELEMENTS = 1;
       if (image.name) {
-        myMixin.methods.removeImage({imagesName: this.images[index].name, id: this.id})
-        // this.$store.commit('removeImage', {images: this.images[index], id: this.id,})
+        fireBaseMixins.methods.removeImage({imagesName: image.name, id: this.post.id});
       }
-      this.images.splice(index, COUNT_ELEMENTS)
+      this.post.images.splice(index, COUNT_ELEMENTS);
     },
 
     getImages(e) {
-      for (let i = 0; i < e.target.files.length; i++) {
-        let url = URL.createObjectURL(e.target.files[i]);
-        this.images.push({name: null, url, file: e.target.files[i]})
+      let currentImages = Object.values(e.target.files).map(element => {
+        let url = URL.createObjectURL(element);
+        return {name: null, url, file: element};
+      })
+      this.post.images.push(...currentImages);
+    },
+
+    checkClick(event) {
+      if (event.target.id === 'background') {
+        this.closeAddBlock()
       }
     },
 
-    closeBlock(event) {
-      if (event.target.id === 'background')
-        this.$emit('closePostBlock', false)
+    closeAddBlock(){
+      this.$emit('closePostBlock', false);
     },
   }
-
 }
 
 </script>

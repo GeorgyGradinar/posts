@@ -14,7 +14,7 @@ export default {
   props: ['images'],
 
   created() {
-    this.image = this.images
+    this.image = this.images;
   },
 
   data() {
@@ -28,23 +28,23 @@ export default {
   methods: {
     nextImg() {
       if (this.index >= this.image.length - 1) {
-        this.index = 0
+        this.index = 0;
       } else {
-        this.index++
+        this.index++;
       }
     },
 
     lastImg() {
       if (this.index <= 0) {
-        this.index = this.image.length - 1
+        this.index = this.image.length - 1;
       } else {
-        this.index--
+        this.index--;
       }
     },
 
     closeShow(event) {
       if (!this.targets.includes(event.target.id)) {
-        this.$emit('closeShowImg', false)
+        this.$emit('closeShowImg', false);
       }
     },
   }

@@ -1,12 +1,12 @@
 <template>
 
-  <button @click="isOpenPostBlock('true')">Create new post</button>
-  <task class="makeArticle"
+  <button @click="isOpenPostBlock(true)">Create new post</button>
+  <task class="make-article"
         v-if="isCreatePostDialog"
-        @closePostBlock='isOpenPostBlock'>
+        @closePostBlock="isOpenPostBlock">
   </task>
 
-  <div class="wrap-newArticle" v-for="(article, index) in this.$store.state.articles" :key="article.id">
+  <div class="wrap-new-article" v-for="(article, index) in this.articles" :key="article.id">
     <show-tasks
         :index="index">
     </show-tasks>
@@ -18,13 +18,13 @@
 <script>
 
 import task from "./components/add-task";
-import showTasks from "@/components/showTasks";
+import showTasks from "@/components/show-tasks";
 
 export default {
 
   components: {
     task,
-    showTasks
+    showTasks,
   },
 
   data() {
@@ -34,14 +34,20 @@ export default {
     }
   },
 
+  watch: {
+    '$store.state.articles'() {
+      this.articles = this.$store.state.articles
+    }
+  },
+
   mounted() {
-    this.$store.commit('getPosts')
+    this.$store.commit('getPosts');
   },
 
   methods: {
 
     isOpenPostBlock(isOpen) {
-      this.isCreatePostDialog = isOpen
+      this.isCreatePostDialog = isOpen;
     },
 
   }
@@ -57,7 +63,7 @@ export default {
   box-sizing: border-box;
 }
 
-.makeArticle {
+.make-article {
   position: absolute;
   top: 0;
   z-index: 2;

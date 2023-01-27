@@ -1,6 +1,6 @@
 import {createStore} from "vuex";
 import {collection,  onSnapshot} from 'firebase/firestore';
-import {db} from '@/store/fire-base'
+import {db} from '@/store/firebase-ip'
 
 const todosCollectionRef = collection(db, 'posts');
 
@@ -25,12 +25,11 @@ const store = createStore({
                         text: doc.data().text,
                         images: doc.data().images,
                     }
-                    fbPosts.push(todo)
+                    fbPosts.push(todo);
                 });
                 this.state.articles = fbPosts;
-            })
+            });
         },
-
     },
     getters: {
     }

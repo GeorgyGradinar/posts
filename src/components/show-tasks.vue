@@ -13,11 +13,11 @@
       </div>
     </div>
 
-    <show-images class="showImg" v-if="isOpenShowImg" :images="this.$store.state.articles[this.index].images"
+    <show-images class="show-img" v-if="isOpenShowImg" :images="this.$store.state.articles[this.index].images"
                  @closeShowImg="isShowImg">
     </show-images>
 
-    <edit-task class="showImg" v-if="isOpenEditMenu"
+    <edit-task class="show-img" v-if="isOpenEditMenu"
                :index="this.index"
                @closePostBlock="isOpenMenuEdit">
     </edit-task>
@@ -27,9 +27,9 @@
 
 <script>
 
-import showImages from "@/components/showImages";
+import showImages from "@/components/show-images";
 import editTask from "@/components/add-task";
-import {myMixin} from "@/store/request";
+import {fireBaseMixins} from "@/store/firebase-requests";
 
 export default {
   components: {
@@ -38,6 +38,10 @@ export default {
   },
 
   props: ['index'],
+
+  mounted() {
+
+  },
 
   data() {
     return {
@@ -49,16 +53,15 @@ export default {
 
   methods: {
     isShowImg(isOpen) {
-      this.isOpenShowImg = isOpen
+      this.isOpenShowImg = isOpen;
     },
 
     isOpenMenuEdit(isOpen) {
-      this.isOpenEditMenu = isOpen
+      this.isOpenEditMenu = isOpen;
     },
 
     removeArticle() {
-      myMixin.methods.removePost({firebase: this.post.fireBaseUrl, id: this.post.id, images:this.post.images})
-      // this.$store.commit('removePost', {firebase: this.post.fireBaseUrl, id: this.post.id, images:this.post.images})
+      fireBaseMixins.methods.removePost({firebase: this.post.fireBaseUrl, id: this.post.id, images:this.post.images});
     },
 
   }
@@ -88,7 +91,7 @@ export default {
   background-color: darkgrey;
 }
 
-.showImg {
+.show-img {
   position: absolute;
   top: 0;
   left: 0;
