@@ -1,67 +1,69 @@
 <template>
-  <div class="wrap-article">
 
-    <h1>{{ this.$store.state.articles[this.index].title }}</h1>
-    <h3>{{ this.$store.state.articles[this.index].text }}</h3>
+  <div class="wrap-new-article" v-for="post in this.posts" :key="post.id">
+    <div class="wrap-article">
 
-    <img src="../assets/edit.svg" @click="isOpenMenuEdit(true)">
-    <img src="../assets/delete.svg" @click="removeArticle">
+      <h1>{{ post.title }}</h1>
+      <h3>{{ post.text }}</h3>
 
-    <div v-if="this.$store.state.articles[this.index].images">
-      <div class="wrap-img" v-for="object in this.$store.state.articles[this.index].images" :key="object.id">
-        <img class="img" :src="object.url" alt="" @click="isShowImg(true)"/>
+      <img src="../assets/edit.svg" @click="openEditPost(post.fireBaseUrl)">
+      <img src="../assets/delete.svg" @click="removePost(post)">
+
+      <div v-if="post.images.length">
+        <div class="wrap-img" v-for="object in post.images" :key="object.id">
+          <img class="img" :src="object.url" alt="" @click="isShowImg(true)"/>
+        </div>
       </div>
+
+      <show-images class="show-img" v-if="isOpenShowImg"
+                   :images="post.images"
+                   @closeShowImg="isShowImg">
+      </show-images>
+
     </div>
-
-    <show-images class="show-img" v-if="isOpenShowImg" :images="this.$store.state.articles[this.index].images"
-                 @closeShowImg="isShowImg">
-    </show-images>
-
-    <edit-task class="show-img" v-if="isOpenEditMenu"
-               :index="this.index"
-               @closePostBlock="isOpenMenuEdit">
-    </edit-task>
-
   </div>
+
 </template>
 
 <script>
 
 import showImages from "@/components/show-images";
-import editTask from "@/components/add-task";
-import {fireBaseMixins} from "@/store/firebase-requests";
+import {fireBaseMixins} from "@/requests/firebase-requests";
 
 export default {
   components: {
     showImages,
-    editTask
   },
 
-  props: ['index'],
-
-  mounted() {
-
+  created() {
+    this.posts = this.$store.state.articles;
   },
 
   data() {
     return {
+      posts: [],
       isOpenShowImg: false,
-      isOpenEditMenu: false,
-      post: this.$store.state.articles[this.index]
+    }
+  },
+
+  watch: {
+    '$store.state.articles'() {
+      this.posts = this.$store.state.articles;
     }
   },
 
   methods: {
+
     isShowImg(isOpen) {
       this.isOpenShowImg = isOpen;
     },
 
-    isOpenMenuEdit(isOpen) {
-      this.isOpenEditMenu = isOpen;
+    openEditPost(id) {
+      this.$router.push(`/create-edit-post/${id}`);
     },
 
-    removeArticle() {
-      fireBaseMixins.methods.removePost({firebase: this.post.fireBaseUrl, id: this.post.id, images:this.post.images});
+    removePost(post) {
+      fireBaseMixins.methods.removePost({firebase: post.fireBaseUrl, id: post.id, images: post.images});
     },
 
   }
