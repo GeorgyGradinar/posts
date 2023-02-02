@@ -17,20 +17,12 @@ export default {
 
   data() {
     return {
-      posts: [],
-    }
-  },
-
-  watch: {
-    '$store.state.articles'() {
-      this.posts = this.$store.state.articles
     }
   },
 
   mounted() {
     this.$store.commit('getPosts');
   },
-
 }
 
 </script>

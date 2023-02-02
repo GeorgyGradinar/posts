@@ -1,6 +1,6 @@
 <template>
 
-  <button @click="isOpenPostBlock(true)">Create new post</button>
+  <button @click="openCreatePost">Create new post</button>
 
 </template>
 
@@ -10,7 +10,7 @@ export default {
   name: "header",
 
   methods:{
-    isOpenPostBlock() {
+    openCreatePost() {
       this.$router.push('/create-edit-post')
     },
   }

@@ -11,8 +11,9 @@ export default createRouter({
 
         {
             path: '/create-edit-post/:fireBaseURL?',
+
             name:'create_edit_task',
-            component: () => import("@/components/add-edit-task")
+            component: () => import("@/components/create-edit-post/add-edit-task")
         },
     ]
 })

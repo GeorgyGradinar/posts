@@ -1,6 +1,6 @@
 <template>
 
-  <div class="wrap-new-article" v-for="post in this.posts" :key="post.id">
+  <div class="wrap-new-article" v-for="post in posts" :key="post.id">
     <div class="wrap-article">
 
       <h1>{{ post.title }}</h1>
@@ -10,8 +10,8 @@
       <img src="../assets/delete.svg" @click="removePost(post)">
 
       <div v-if="post.images.length">
-        <div class="wrap-img" v-for="object in post.images" :key="object.id">
-          <img class="img" :src="object.url" alt="" @click="isShowImg(true)"/>
+        <div class="wrap-img" v-for="image in post.images" :key="image.id">
+          <img class="img" :src="image.url" alt="" @click="isShowImg(true)"/>
         </div>
       </div>
 
@@ -27,7 +27,7 @@
 
 <script>
 
-import showImages from "@/components/show-images";
+import showImages from "@/components/show-images/show-images";
 import {fireBaseMixins} from "@/requests/firebase-requests";
 
 export default {
@@ -36,7 +36,7 @@ export default {
   },
 
   created() {
-    this.posts = this.$store.state.articles;
+    this.posts = this.$store.state.posts;
   },
 
   data() {
@@ -47,8 +47,8 @@ export default {
   },
 
   watch: {
-    '$store.state.articles'() {
-      this.posts = this.$store.state.articles;
+    '$store.state.posts'() {
+      this.posts = this.$store.state.posts;
     }
   },
 

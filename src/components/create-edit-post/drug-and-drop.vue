@@ -50,7 +50,6 @@ export default {
     },
 
     images(event) {
-      console.log(event)
       this.files.push(...event.target.files);
       this.emitImages();
     },

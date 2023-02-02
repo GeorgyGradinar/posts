@@ -8,7 +8,7 @@ const postsCollectionRef = collection(db, 'posts');
 const store = createStore({
     state() {
         return {
-            articles: [],
+            posts: [],
         }
     },
 
@@ -26,7 +26,7 @@ const store = createStore({
                     };
                     fbPosts.push(post);
                 });
-                this.state.articles = fbPosts;
+                this.state.posts = fbPosts;
             });
         },
     },

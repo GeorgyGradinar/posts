@@ -11,7 +11,7 @@
           <div class="wrap-section-img">
             <div class="wrap-img" v-for="(image, index) in this.post.images" :key="image.id">
               <img class="img" :src="image.url" alt=""/>
-              <img class="delete-img" src="../assets/close_FILL0_wght400_GRAD0_opsz48.svg"
+              <img class="delete-img" src="../../assets/close_FILL0_wght400_GRAD0_opsz48.svg"
                    @click="removeImg(index, image)"/>
             </div>
           </div>
@@ -28,7 +28,7 @@
 import drugAndDrop from "./drug-and-drop";
 import {fireBaseMixins} from "@/requests/firebase-requests";
 
-const MAX_COUNT_IMAGES = 8;
+
 
 export default {
 
@@ -37,20 +37,21 @@ export default {
   },
 
   created() {
+
     const FIRE_BASE_URL = this.$route.params.fireBaseURL;
 
     if (!FIRE_BASE_URL) {
       return;
     }
 
-    const POST = this.$store.state.articles.find(post => post.fireBaseUrl === FIRE_BASE_URL);
+    let post = this.$store.state.posts.find(post => post.fireBaseUrl === FIRE_BASE_URL);
 
     this.post = {
-      title: POST.title,
-      text: POST.text,
-      id: POST.id,
-      fireBaseId: POST.fireBaseUrl,
-      images: POST.images,
+      title: post.title,
+      text: post.text,
+      id: post.id,
+      fireBaseId: post.fireBaseUrl,
+      images: post.images,
     };
   },
 
@@ -65,7 +66,6 @@ export default {
       },
       imageLoaded: [],
       imagesUnLoaded: [],
-      MAX_COUNT_IMAGES,
     }
   },
 
@@ -91,7 +91,7 @@ export default {
         fireBaseUrl: this.post.fireBaseId,
       });
 
-      this.closeAddBlock();
+      this.closeBlock();
     },
 
     removeImg(index, image) {
@@ -102,9 +102,9 @@ export default {
       this.post.images.splice(index, COUNT_ELEMENTS);
     },
 
-    getImages(el) {
-      let currentImages = el.map(element => {
-        let url = URL.createObjectURL(element);
+    getImages(images) {
+      const currentImages = images.map(element => {
+        const url = URL.createObjectURL(element);
         return {name: null, url, file: element};
       })
       this.post.images.push(...currentImages);
@@ -112,11 +112,11 @@ export default {
 
     checkClick(event) {
       if (event.target.id === 'background') {
-        this.closeAddBlock();
+        this.closeBlock();
       }
     },
 
-    closeAddBlock() {
+    closeBlock() {
       this.$router.push('/');
     },
   }
