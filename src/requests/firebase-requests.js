@@ -13,7 +13,7 @@ const fireBaseMixins = {
     methods: {
 
         submitPosts(payload) {
-            promises = []
+            promises = [];
             imagesUrl = payload.imagesURL || [];
             new Promise(resolveMainPromise => {
                 if (payload.imagesUnLoaded.length) {
@@ -24,33 +24,26 @@ const fireBaseMixins = {
             }).then((result) => {
                 Promise.all([result]).then(() => {
                     if (payload.fireBaseUrl) {
-                        this.updatePost(payload);
+                        this.appendToFireBase(false, payload);
                     } else {
-                        this.addNewPost(payload);
+                        this.appendToFireBase(true, payload);
                     }
-                })
-            })
+                });
+            });
         },
 
-        updatePost(payload){
-            updateDoc(doc(POST_COLLECTION_REF, payload.fireBaseUrl), {
+
+        appendToFireBase(isNewPost, payload) {
+            const templatePost = {
                 title: payload.title,
                 text: payload.text,
                 images: imagesUrl,
                 id: payload.id
-            });
+            };
+            isNewPost ? addDoc(POST_COLLECTION_REF, templatePost) : updateDoc(doc(POST_COLLECTION_REF, payload.fireBaseUrl), templatePost);
         },
 
-        addNewPost(payload){
-            addDoc(POST_COLLECTION_REF, {
-                title: payload.title,
-                text: payload.text,
-                images: imagesUrl,
-                id: payload.id
-            });
-        },
-
-        upLoadImages(payload, resolveMainPromise){
+        upLoadImages(payload, resolveMainPromise) {
             payload.imagesUnLoaded.forEach(element => {
                 let name = element.name.slice(0, element.name.lastIndexOf('.'));
                 uploadBytes(ref(STORAGE, `${payload.id}/${name}`), element).then((snapshot) => {
@@ -67,7 +60,7 @@ const fireBaseMixins = {
             });
         },
 
-        getImageUrl(payload, resolveGetUrlImage, name){
+        getImageUrl(payload, resolveGetUrlImage, name) {
             getDownloadURL(ref(STORAGE, `${payload.id}/${name}`))
                 .then((url) => {
                     resolveGetUrlImage(imagesUrl.push({url, name}));
@@ -78,8 +71,9 @@ const fireBaseMixins = {
 
         removePost(payload) {
             deleteDoc(doc(POST_COLLECTION_REF, payload.firebase));
-            payload.images.forEach(element => {
-                this.removeImage({imagesName: element.name, id: payload.id});
+
+            payload.images.forEach(image => {
+                this.removeImage({imagesName: image.name, id: payload.id});
             });
         },
 

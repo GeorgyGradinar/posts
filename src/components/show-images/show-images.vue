@@ -1,9 +1,9 @@
 <template>
   <div class="wrap-image" id="main-block" @click="closeShow($event)">
 
-    <img class="last" src="../assets/lastImg.svg" @click="lastImg" id="last-button">
+    <img class="last" src="../../assets/lastImg.svg" @click="lastImg" id="last-button">
     <img :src="this.image[this.index]" alt="" id="img">
-    <img class="next" src="../assets/nextImg.svg" @click="nextImg" id="next-button">
+    <img class="next" src="../../assets/nextImg.svg" @click="nextImg" id="next-button">
 
   </div>
 </template>

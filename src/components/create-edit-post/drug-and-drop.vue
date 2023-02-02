@@ -2,16 +2,17 @@
   <form ref="fileform">
     <span class="drop-files">Drop the files here!</span>
     <label class="file-upload">
-      <input type="file" multiple @change="images($event)"/>
-      <svg class="img-download" xmlns="http://www.w3.org/2000/svg" height="48" width="48"><path fill="" d="M11 40q-1.2 0-2.1-.9Q8 38.2 8 37v-7.15h3V37h26v-7.15h3V37q0 1.2-.9 2.1-.9.9-2.1.9Zm13-7.65-9.65-9.65 2.15-2.15 6 6V8h3v18.55l6-6 2.15 2.15Z"/></svg>
+      <input type="file" multiple @change="images($event, 'target')"/>
+      <svg class="img-download" xmlns="http://www.w3.org/2000/svg" height="48" width="48">
+        <path fill=""
+              d="M11 40q-1.2 0-2.1-.9Q8 38.2 8 37v-7.15h3V37h26v-7.15h3V37q0 1.2-.9 2.1-.9.9-2.1.9Zm13-7.65-9.65-9.65 2.15-2.15 6 6V8h3v18.55l6-6 2.15 2.15Z"/>
+      </svg>
     </label>
   </form>
 </template>
 
 <script>
 export default {
-  // eslint-disable-next-line vue/multi-word-component-names
-  name: "drug&drop",
 
   mounted() {
     this.dragAndDropCapable = this.determineDragAndDropCapable();
@@ -22,12 +23,11 @@ export default {
           e.stopPropagation();
         }.bind(this), false);
       }.bind(this));
-      this.$refs.fileform.addEventListener('drop', function (e) {
-        console.log(e)
-        for (let i = 0; i < e.dataTransfer.files.length; i++) {
-          this.files.push(e.dataTransfer.files[i]);
-        }
-        this.getImagePreviews();
+      this.$refs.fileform.addEventListener('drop', function (element) {
+
+        this.files.push(...element.dataTransfer.files);
+        this.emitImages();
+
       }.bind(this));
     }
   },
@@ -49,13 +49,15 @@ export default {
           && 'FileReader' in window;
     },
 
-    getImagePreviews() {
-      this.$emit('images', this.files)
+    images(event) {
+      this.files.push(...event.target.files);
+      this.emitImages();
     },
 
-    images(event) {
-      this.$emit('images', event)
-    }
+    emitImages(){
+      this.$emit('images', this.files);
+      this.files = [];
+    },
   }
 }
 </script>
@@ -86,11 +88,11 @@ form {
   display: none;
 }
 
-.img-download{
+.img-download {
   transition: .2s all;
 }
 
-.img-download:hover{
+.img-download:hover {
   fill: #b92c32;
 }
 

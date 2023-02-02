@@ -5,24 +5,18 @@
         <input type="text" class="text" v-model="this.post.title">
         <textarea class="text" name="info" cols="30" maxlength="200" rows="4" v-model="this.post.text"></textarea>
 
-        <div v-if="this.post.images.length" class="section-img">
-          <div class="wrap-section-img">
+        <drug-and-drop class="section-drug-drop" @images="getImages"></drug-and-drop>
 
+        <div class="section-img">
+          <div class="wrap-section-img">
             <div class="wrap-img" v-for="(image, index) in this.post.images" :key="image.id">
               <img class="img" :src="image.url" alt=""/>
-              <img class="delete-img" src="../assets/close_FILL0_wght400_GRAD0_opsz48.svg"
+              <img class="delete-img" src="../../assets/close_FILL0_wght400_GRAD0_opsz48.svg"
                    @click="removeImg(index, image)"/>
             </div>
-
-            <label class="file-upload" v-if="this.post.images.length < this.MAX_COUNT_IMAGES">
-              <input type="file" multiple @change="getImages($event)"/>
-              <img src="../assets/download.svg" alt="">
-            </label>
-
           </div>
         </div>
 
-        <drug-and-drop class="section-drug-drop" v-else @images="getImages"></drug-and-drop>
         <button class="button-submit" @click="addToFireBase">Submit</button>
       </div>
     </div>
@@ -32,13 +26,11 @@
 <script>
 
 import drugAndDrop from "./drug-and-drop";
-import {fireBaseMixins} from "@/store/firebase-requests";
+import {fireBaseMixins} from "@/requests/firebase-requests";
 
-const MAX_COUNT_IMAGES = 8;
+
 
 export default {
-
-  props: ['index'],
 
   components: {
     drugAndDrop
@@ -46,11 +38,13 @@ export default {
 
   created() {
 
-    if (!this.$store.state.articles[this.index]) {
-      return
+    const FIRE_BASE_URL = this.$route.params.fireBaseURL;
+
+    if (!FIRE_BASE_URL) {
+      return;
     }
 
-    const post = JSON.parse(JSON.stringify(this.$store.state.articles[this.index])) || null;
+    let post = this.$store.state.posts.find(post => post.fireBaseUrl === FIRE_BASE_URL);
 
     this.post = {
       title: post.title,
@@ -58,8 +52,7 @@ export default {
       id: post.id,
       fireBaseId: post.fireBaseUrl,
       images: post.images,
-    }
-
+    };
   },
 
   data() {
@@ -73,16 +66,11 @@ export default {
       },
       imageLoaded: [],
       imagesUnLoaded: [],
-      MAX_COUNT_IMAGES,
     }
   },
 
   methods: {
 
-    // onFileChange(files) {
-    //   console.log(files)
-    //   this.images = files
-    // },
 
     addToFireBase() {
 
@@ -103,7 +91,7 @@ export default {
         fireBaseUrl: this.post.fireBaseId,
       });
 
-      this.closeAddBlock()
+      this.closeBlock();
     },
 
     removeImg(index, image) {
@@ -114,9 +102,9 @@ export default {
       this.post.images.splice(index, COUNT_ELEMENTS);
     },
 
-    getImages(e) {
-      let currentImages = Object.values(e.target.files).map(element => {
-        let url = URL.createObjectURL(element);
+    getImages(images) {
+      const currentImages = images.map(element => {
+        const url = URL.createObjectURL(element);
         return {name: null, url, file: element};
       })
       this.post.images.push(...currentImages);
@@ -124,12 +112,12 @@ export default {
 
     checkClick(event) {
       if (event.target.id === 'background') {
-        this.closeAddBlock()
+        this.closeBlock();
       }
     },
 
-    closeAddBlock(){
-      this.$emit('closePostBlock', false);
+    closeBlock() {
+      this.$router.push('/');
     },
   }
 }
@@ -181,23 +169,16 @@ textarea,
   margin-bottom: 10px;
 }
 
-
 .text {
   width: 100%;
   padding: 10px;
   resize: none;
   background: rgba(241, 250, 238, 70%);
-
-  /*background-color: #F1FAEE;*/
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  font-size: 15px;
 }
 
 .text:focus {
   outline: none;
 }
-
 
 .section-img {
   position: relative;
@@ -237,17 +218,6 @@ textarea,
   position: relative;
 }
 
-.file-upload {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100px;
-  height: 100px;
-  border: 2px dashed #1D3557;
-  /*border-radius: 3px;*/
-  cursor: pointer;
-}
-
 .file-upload input[type=file] {
   display: none;
 }
@@ -276,6 +246,5 @@ textarea,
 .button-submit {
   box-shadow: 3px 3px 5px #ccc;
 }
-
 
 </style>

@@ -2,37 +2,35 @@ import {createStore} from "vuex";
 import {collection,  onSnapshot} from 'firebase/firestore';
 import {db} from '@/store/firebase-ip'
 
-const todosCollectionRef = collection(db, 'posts');
+const postsCollectionRef = collection(db, 'posts');
 
 
 const store = createStore({
     state() {
         return {
-            articles: [],
+            posts: [],
         }
     },
 
     mutations: {
-
         getPosts() {
-            onSnapshot(todosCollectionRef, (querySnapshot) => {
+            onSnapshot(postsCollectionRef, (querySnapshot) => {
                 const fbPosts = [];
                 querySnapshot.forEach((doc) => {
-                    const todo = {
+                    const post = {
                         id: doc.data().id,
                         fireBaseUrl: doc.id,
                         title: doc.data().title,
                         text: doc.data().text,
                         images: doc.data().images,
-                    }
-                    fbPosts.push(todo);
+                    };
+                    fbPosts.push(post);
                 });
-                this.state.articles = fbPosts;
+                this.state.posts = fbPosts;
             });
         },
     },
-    getters: {
-    }
-})
+    getters: {}
+});
 
 export default store;
